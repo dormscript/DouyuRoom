@@ -1,4 +1,6 @@
-var removeAdsIndex =0; 
+var removeAdsIndex =0;
+var roomId="";
+var roomInfo="";
 function removeAds() {
 	var removeAdsTimer=self.setInterval(function(){		
 		if (removeAdsIndex>=10) {
@@ -16,6 +18,8 @@ function removeAds() {
 		$(".focus_box_con-0797e0").remove();	//视频里右下角“关注”按钮
 		$("div[data-component-id='view'][data-component-key='2']").remove(); //头部大幅广告
 		$(".live-room.clearfix").css("padding-top","0px");	//头部大幅广告
+		$(".QRcode").remove();	//视频内，二维码 游戏推广
+		$("#js-chat-notice").remove();	//弹幕公告
 
 		$(".showdanmu-f76338").click();	//关闭弹幕
 		removeAdsIndex++;
@@ -25,6 +29,10 @@ function removeAds() {
 function youhua() {
 	$("#header").hide();	//隐藏头部
 	setFont();
+	$(".noble-barrage-suspend ul").remove();	//删除贵族悬浮弹幕
+	$("#dialog-more-video").remove();	//直播结束，自动跳转
+
+	$(".headline h2").attr("title",$(".headline h2").text());	//房间标题
 	$("#header").css("border-bottom-width","0px");
 	$("#mainbody").css("margin-top","0px");	//"50px"
 	$("#mainbody").css("padding-top","0px");	//"20px"
@@ -106,14 +114,34 @@ function delayInset() {
 };
 // 斗鱼的其他js，触发一些事件会修改回原来的字体样式,所以放在了点击状况信息时，修改一次字体
 function setFont() {
+	$(".cs-textarea").css("color","black");	//颜色为黑
 	$(".cs-textarea").css("font-size","14px"); //文字输入区  字体
 	$(".cs-textarea").css("font-weight","bold");//文字输入区  字体加粗
 }
-$(document).ready(function(){
-	if (roomObj.getRoomId() =="") {
-		return;
+function getRoomInfo() {
+	if (roomInfo =="") {
+		roomInfo = roomObj.getRoomInfoById(roomId);
 	}
+	if (roomInfo !="") {
+		$(".text").css("font-size","22px");
+		$(".text").css("font-weight","bold");
+		if (roomInfo.data.room_status ==2) {	//1.开播 2.关播
+			$(".text").text("尚未开播");
+		}else{
+			var t = RoomObj.getEquationOfTime(roomInfo.data.start_time);
+			$(".text").text(t);			
+		}
+	}
+}
+$(document).ready(function(){
+	roomId = roomObj.getRoomId();
+	if (roomId =="") {return}
 	removeAds();
 	var youhuaTimer=setTimeout("youhua()",3000);
-	var delayInsetTimer = setTimeout("delayInset()", 2500);
+	var delayInsetTimer = setTimeout("delayInset()", 4000);
+	//鼠标进入主播头像区域事件
+	$(".anchor-pic.fl").mouseenter(function(){
+		getRoomInfo();
+	});
 });
+
